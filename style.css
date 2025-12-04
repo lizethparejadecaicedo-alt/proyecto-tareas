@@ -1,8 +1,74 @@
-
-/* Estilos iniciales */
+/* ===== ESTILOS GENERALES ===== */
 body {
     font-family: Arial, sans-serif;
     background: #f5f5f5;
-    margin: 0;
     padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* ===== CONTENEDORES ===== */
+.container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.form-box, .lista-box {
+    background: white;
+    padding: 20px;
+    width: 48%;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+/* ===== FORMULARIO ===== */
+label {
+    display: block;
+    margin-top: 15px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 10px;
+    background: #3498db;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #2980b9;
+}
+
+/* ===== TABLA ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background: #3498db;
+    color: white;
 }
