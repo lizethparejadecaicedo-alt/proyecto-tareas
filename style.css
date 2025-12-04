@@ -1,114 +1,72 @@
-/* --- ESTILOS GENERALES --- */
-
-body {
-    margin: 0;
-    padding: 0;
-    font-family: "Poppins", sans-serif;
-    background: #ffeef7;
-    color: #333;
+/* ===== VARIABLES DE COLOR ===== */
+:root{
+  --pink: #ff2da6;
+  --aqua: #44d0d2;
+  --bg: #fff0f6;
+  --card: #ffffff;
+  --muted: #666;
 }
 
-/* --- ENCABEZADO --- */
-
-.header {
-    text-align: center;
-    padding: 20px;
-    background: #ff2da6;
-    color: white;
-    border-bottom: 6px solid #44d0d2;
+/* ===== RESET MINIMO ===== */
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: "Poppins", system-ui, Arial, sans-serif;
+  background:var(--bg);
+  color:#222;
 }
 
-.logo {
-    width: 120px;
-    margin-bottom: 10px;
+/* ===== HEADER ===== */
+.header{
+  display:flex;
+  align-items:center;
+  gap:20px;
+  background: linear-gradient(90deg,var(--pink), #ff78c6);
+  color:white;
+  padding:18px 20px;
+  border-bottom:6px solid var(--aqua);
+}
+.logo{width:90px;height:90px;object-fit:contain;border-radius:50%}
+.header-text h1{margin:0;font-size:22px}
+.header-text p{margin:0;font-size:14px;opacity:0.95}
+
+/* ===== MAIN ===== */
+.main{max-width:1100px;margin:18px auto;padding:10px}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+
+/* CARD */
+.card{background:var(--card);padding:18px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+.wide{min-height:320px}
+
+/* FORM & CONTROLS */
+label{display:block;margin-top:8px;font-weight:600;color:var(--muted)}
+input, select{width:100%;padding:10px;margin-top:6px;border:1px solid #eee;border-radius:8px;font-size:14px}
+.row{display:flex;gap:10px;margin-top:12px}
+.row.small{display:flex;gap:12px;align-items:center;margin-top:12px}
+.btn{
+  background:var(--pink);color:white;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600
+}
+.btn.ghost{background:transparent;color:var(--pink);border:2px solid var(--pink)}
+.btn:hover{opacity:0.95;transform:translateY(-1px)}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;margin-top:10px;background:transparent}
+thead{background:linear-gradient(90deg,var(--pink), #ff78c6);color:white}
+th, td{padding:10px;text-align:center;border-bottom:1px solid #f6e6f0}
+tbody tr:hover{background:#fff7fb}
+
+/* CONTROLS */
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* FOOTER */
+.footer{text-align:center;padding:12px;color:#666;margin-top:18px;font-size:14px}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .grid, .grid-2{grid-template-columns:1fr}
+  .logo{width:70px;height:70px}
 }
 
-/* --- CONTENEDOR PRINCIPAL --- */
-
-.container {
-    max-width: 900px;
-    margin: auto;
-    padding: 20px;
-}
-
-/* --- CARD / TARJETAS --- */
-
-.card {
-    background: white;
-    padding: 25px;
-    margin-bottom: 25px;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.card h2 {
-    color: #ff2da6;
-    margin-bottom: 15px;
-}
-
-/* --- FORMULARIO --- */
-
-label {
-    font-weight: 600;
-}
-
-input {
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0 15px;
-    border: 2px solid #ff2da6;
-    border-radius: 10px;
-    font-size: 15px;
-    outline: none;
-}
-
-/* --- BOTÓN --- */
-
-.btn {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    font-size: 17px;
-    background: #ff2da6;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: .3s;
-}
-
-.btn:hover {
-    background: #d81f88;
-}
-
-/* --- TABLA --- */
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-}
-
-table thead {
-    background: #ff2da6;
-    color: white;
-}
-
-th, td {
-    padding: 12px;
-    text-align: center;
-    border-bottom: 2px solid #ffe3f1;
-}
-
-td button {
-    background: #ff2da6;
-    border: none;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-td button:hover {
-    background: #d81f88;
-}
