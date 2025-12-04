@@ -1,66 +1,45 @@
-// =====================
-// Cargar inventario desde LocalStorage
-// =====================
-let inventario = JSON.parse(localStorage.getItem("inventario")) || [];
+let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
 
-// =====================
-// Mostrar inventario
-// =====================
-function mostrarInventario() {
-    let tabla = document.getElementById("tablaInventario");
-    tabla.innerHTML = "";
+const form = document.getElementById("productForm");
+const table = document.getElementById("inventoryTable");
 
-    inventario.forEach((producto, index) => {
-        tabla.innerHTML += `
+function renderInventory() {
+    table.innerHTML = "";
+
+    inventory.forEach((item, index) => {
+        let total = item.qty * item.price;
+
+        table.innerHTML += `
             <tr>
-                <td>${producto.nombre}</td>
-                <td>${producto.cantidad}</td>
-                <td>$${producto.precio.toLocaleString()}</td>
-                <td>$${(producto.cantidad * producto.precio).toLocaleString()}</td>
-                <td><button onclick="eliminarProducto(${index})">Eliminar</button></td>
+                <td>${item.name}</td>
+                <td>${item.qty}</td>
+                <td>$${item.price.toLocaleString()}</td>
+                <td>$${total.toLocaleString()}</td>
+                <td><button onclick="removeItem(${index})">Eliminar</button></td>
             </tr>
         `;
     });
 }
 
-// =====================
-// Agregar producto
-// =====================
-function agregarProducto() {
-    let nombre = document.getElementById("nombre").value;
-    let cantidad = document.getElementById("cantidad").value;
-    let precio = document.getElementById("precio").value;
+form.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-    if (nombre === "" || cantidad === "" || precio === "") {
-        alert("Por favor, complete todos los campos");
-        return;
-    }
+    let name = document.getElementById("productName").value;
+    let qty = parseInt(document.getElementById("productQty").value);
+    let price = parseInt(document.getElementById("productPrice").value);
 
-    let nuevo = {
-        nombre,
-        cantidad: Number(cantidad),
-        precio: Number(precio)
-    };
+    inventory.push({ name, qty, price });
+    localStorage.setItem("inventory", JSON.stringify(inventory));
 
-    inventario.push(nuevo);
+    form.reset();
+    renderInventory();
+});
 
-    localStorage.setItem("inventario", JSON.stringify(inventario));
-    mostrarInventario();
-
-    document.getElementById("nombre").value = "";
-    document.getElementById("cantidad").value = "";
-    document.getElementById("precio").value = "";
+function removeItem(index) {
+    inventory.splice(index, 1);
+    localStorage.setItem("inventory", JSON.stringify(inventory));
+    renderInventory();
 }
 
-// =====================
-// Eliminar producto
-// =====================
-function eliminarProducto(index) {
-    inventario.splice(index, 1);
-    localStorage.setItem("inventario", JSON.stringify(inventario));
-    mostrarInventario();
-}
-
-// Inicializar tabla al cargar la página
-mostrarInventario();
+renderInventory();
 
