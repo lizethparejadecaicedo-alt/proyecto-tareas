@@ -1,74 +1,114 @@
-/* ===== ESTILOS GENERALES ===== */
+/* --- ESTILOS GENERALES --- */
+
 body {
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
-    padding: 20px;
+    margin: 0;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+    background: #ffeef7;
+    color: #333;
 }
 
-h1 {
+/* --- ENCABEZADO --- */
+
+.header {
     text-align: center;
-    margin-bottom: 30px;
-}
-
-/* ===== CONTENEDORES ===== */
-.container {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-}
-
-.form-box, .lista-box {
-    background: white;
     padding: 20px;
-    width: 48%;
-    border-radius: 10px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    background: #ff2da6;
+    color: white;
+    border-bottom: 6px solid #44d0d2;
 }
 
-/* ===== FORMULARIO ===== */
+.logo {
+    width: 120px;
+    margin-bottom: 10px;
+}
+
+/* --- CONTENEDOR PRINCIPAL --- */
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* --- CARD / TARJETAS --- */
+
+.card {
+    background: white;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.card h2 {
+    color: #ff2da6;
+    margin-bottom: 15px;
+}
+
+/* --- FORMULARIO --- */
+
 label {
-    display: block;
-    margin-top: 15px;
+    font-weight: 600;
 }
 
 input {
     width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-button {
-    margin-top: 20px;
-    width: 100%;
     padding: 10px;
-    background: #3498db;
-    border: none;
-    border-radius: 5px;
+    margin: 8px 0 15px;
+    border: 2px solid #ff2da6;
+    border-radius: 10px;
+    font-size: 15px;
+    outline: none;
+}
+
+/* --- BOTÓN --- */
+
+.btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    font-size: 17px;
+    background: #ff2da6;
     color: white;
-    font-size: 16px;
+    border: none;
+    border-radius: 10px;
     cursor: pointer;
+    transition: .3s;
 }
 
-button:hover {
-    background: #2980b9;
+.btn:hover {
+    background: #d81f88;
 }
 
-/* ===== TABLA ===== */
+/* --- TABLA --- */
+
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    margin-top: 15px;
+}
+
+table thead {
+    background: #ff2da6;
+    color: white;
 }
 
 th, td {
     padding: 12px;
     text-align: center;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 2px solid #ffe3f1;
 }
 
-th {
-    background: #3498db;
+td button {
+    background: #ff2da6;
+    border: none;
     color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+td button:hover {
+    background: #d81f88;
 }
