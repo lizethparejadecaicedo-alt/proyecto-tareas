@@ -1,45 +1,320 @@
-let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
+/* ========== Datos persistentes ========== */
+let inventory = JSON.parse(localStorage.getItem("michi_inventory")) || [];
+let sales = JSON.parse(localStorage.getItem("michi_sales")) || [];
 
-const form = document.getElementById("productForm");
-const table = document.getElementById("inventoryTable");
+/* ========== Referencias DOM ========== */
+const productForm = document.getElementById("productForm");
+const saleForm = document.getElementById("saleForm");
+const inventoryTbody = document.querySelector("#inventoryTable tbody");
+const salesTbody = document.querySelector("#salesTable tbody");
+const saleProductSelect = document.getElementById("saleProduct");
+const summaryCount = document.getElementById("summaryCount");
+const summaryValue = document.getElementById("summaryValue");
+const searchInv = document.getElementById("searchInv");
+const filterCategory = document.getElementById("filterCategory");
+const exportInvCsv = document.getElementById("exportInvCsv");
+const exportSalesCsv = document.getElementById("exportSalesCsv");
+const fromDate = document.getElementById("fromDate");
+const toDate = document.getElementById("toDate");
+const quickRange = document.getElementById("quickRange");
+const applyFilter = document.getElementById("applyFilter");
+const clearFilter = document.getElementById("clearFilter");
+const salesTotalEl = document.getElementById("salesTotal");
+const salesChartCtx = document.getElementById("salesChart").getContext("2d");
 
-function renderInventory() {
-    table.innerHTML = "";
+let salesChart = null;
 
-    inventory.forEach((item, index) => {
-        let total = item.qty * item.price;
-
-        table.innerHTML += `
-            <tr>
-                <td>${item.name}</td>
-                <td>${item.qty}</td>
-                <td>$${item.price.toLocaleString()}</td>
-                <td>$${total.toLocaleString()}</td>
-                <td><button onclick="removeItem(${index})">Eliminar</button></td>
-            </tr>
-        `;
-    });
+/* ========== Utils ========== */
+function saveAll() {
+  localStorage.setItem("michi_inventory", JSON.stringify(inventory));
+  localStorage.setItem("michi_sales", JSON.stringify(sales));
 }
 
-form.addEventListener("submit", (e) => {
-    e.preventDefault();
+function money(n) {
+  return "$" + Number(n).toLocaleString();
+}
 
-    let name = document.getElementById("productName").value;
-    let qty = parseInt(document.getElementById("productQty").value);
-    let price = parseInt(document.getElementById("productPrice").value);
+/* ========== INVENTORY FUNCTIONS ========== */
+function renderProductOptions() {
+  saleProductSelect.innerHTML = '<option value="">Seleccione...</option>';
+  inventory.forEach((p, i) => {
+    saleProductSelect.innerHTML += `<option value="${i}">${p.name} — ${p.qty} u</option>`;
+  });
+}
 
-    inventory.push({ name, qty, price });
-    localStorage.setItem("inventory", JSON.stringify(inventory));
+function renderCategories() {
+  const cats = [...new Set(inventory.map(i => (i.category || "Sin categoría").trim()))];
+  filterCategory.innerHTML = '<option value="">Todas las categorías</option>';
+  cats.forEach(c => filterCategory.innerHTML += `<option value="${c}">${c}</option>`);
+}
 
-    form.reset();
-    renderInventory();
+/* Render inventario */
+function renderInventory(filterText = "", category = "") {
+  inventoryTbody.innerHTML = "";
+  let totalValue = 0;
+  let totalCount = 0;
+
+  inventory.forEach((p, idx) => {
+    if (filterText && !p.name.toLowerCase().includes(filterText.toLowerCase())) return;
+    if (category && (p.category || "").trim() !== category) return;
+
+    const rowTotal = p.qty * p.price;
+    totalValue += rowTotal;
+    totalCount += p.qty;
+
+    inventoryTbody.innerHTML += `
+      <tr>
+        <td>${p.name}</td>
+        <td>${p.category || ""}</td>
+        <td>${p.qty}</td>
+        <td>${money(p.price)}</td>
+        <td>${money(rowTotal)}</td>
+        <td>
+          <button onclick="editProduct(${idx})" class="btn ghost">Editar</button>
+          <button onclick="deleteProduct(${idx})" class="btn">Eliminar</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  summaryCount.textContent = totalCount;
+  summaryValue.textContent = money(totalValue);
+
+  renderProductOptions();
+  renderCategories();
+}
+
+/* Add / Edit / Delete product */
+productForm.addEventListener("submit", function(e){
+  e.preventDefault();
+  const idEl = document.getElementById("productId");
+  const name = document.getElementById("productName").value.trim();
+  const category = document.getElementById("productCategory").value.trim();
+  const qty = Number(document.getElementById("productQty").value);
+  const price = Number(document.getElementById("productPrice").value);
+
+  if(!name || qty < 0 || price < 0) { alert("Verifica los datos"); return; }
+
+  if(idEl.value) {
+    // editar
+    const idx = Number(idEl.value);
+    inventory[idx] = { name, category, qty, price };
+    idEl.value = "";
+  } else {
+    // nuevo
+    inventory.push({ name, category, qty, price });
+  }
+
+  productForm.reset();
+  saveAll();
+  renderInventory();
 });
 
-function removeItem(index) {
-    inventory.splice(index, 1);
-    localStorage.setItem("inventory", JSON.stringify(inventory));
-    renderInventory();
+function editProduct(idx) {
+  const p = inventory[idx];
+  document.getElementById("productId").value = idx;
+  document.getElementById("productName").value = p.name;
+  document.getElementById("productCategory").value = p.category;
+  document.getElementById("productQty").value = p.qty;
+  document.getElementById("productPrice").value = p.price;
+  window.scrollTo({top:0,behavior:"smooth"});
 }
 
+function deleteProduct(idx) {
+  if(!confirm("Eliminar producto?")) return;
+  inventory.splice(idx,1);
+  saveAll();
+  renderInventory();
+}
+
+/* ===== INVENTORY SEARCH FILTERS ===== */
+searchInv && searchInv.addEventListener("input", (e) => {
+  renderInventory(e.target.value, filterCategory.value);
+});
+filterCategory && filterCategory.addEventListener("change", (e) => {
+  renderInventory(searchInv.value, e.target.value);
+});
+
+/* Export CSV simple */
+function exportCsv(filename, rows) {
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+}
+
+exportInvCsv && exportInvCsv.addEventListener("click", () => {
+  const rows = [["Nombre","Categoría","Cantidad","Precio","Total"]];
+  inventory.forEach(p => rows.push([p.name, p.category || "", p.qty, p.price, p.qty * p.price]));
+  exportCsv("inventario_michi.csv", rows);
+});
+
+/* ========== SALES FUNCTIONS ========== */
+saleForm.addEventListener("submit", function(e){
+  e.preventDefault();
+  const prodIndex = Number(document.getElementById("saleProduct").value);
+  if (isNaN(prodIndex) || prodIndex < 0 || !inventory[prodIndex]) { alert("Seleccione producto"); return; }
+
+  const qty = Number(document.getElementById("saleQty").value);
+  if (qty <= 0) { alert("Cantidad incorrecta"); return; }
+
+  // precio puede ser manual o tomar el del producto
+  const manualPrice = Number(document.getElementById("salePrice").value);
+  const unitPrice = manualPrice > 0 ? manualPrice : inventory[prodIndex].price;
+
+  // verificar stock
+  if (inventory[prodIndex].qty < qty) { alert("Stock insuficiente"); return; }
+
+  // crear venta
+  const sale = {
+    date: new Date().toISOString(),
+    productName: inventory[prodIndex].name,
+    productIndex: prodIndex,
+    qty,
+    unitPrice
+  };
+
+  // restar inventario
+  inventory[prodIndex].qty -= qty;
+
+  // guardar
+  sales.push(sale);
+  saveAll();
+  renderInventory();
+  renderSales();
+  saleForm.reset();
+});
+
+/* Render ventas (con filtro) */
+function renderSales(filtered = null) {
+  // filtered: array de ventas a mostrar. Si es null usamos sales.
+  const rows = filtered || sales;
+  salesTbody.innerHTML = "";
+  let totalAmount = 0;
+
+  rows.forEach((s, idx) => {
+    const date = new Date(s.date);
+    const total = s.qty * s.unitPrice;
+    totalAmount += total;
+    salesTbody.innerHTML += `
+      <tr>
+        <td>${date.toLocaleString()}</td>
+        <td>${s.productName}</td>
+        <td>${s.qty}</td>
+        <td>${money(s.unitPrice)}</td>
+        <td>${money(total)}</td>
+        <td>
+          <button onclick="deleteSale(${idx})" class="btn">Eliminar</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  salesTotalEl.textContent = money(totalAmount);
+  renderSalesChart(rows);
+}
+
+/* Eliminar venta (revierte stock) */
+function deleteSale(idx) {
+  if(!confirm("Eliminar venta y devolver stock?")) return;
+  const s = sales[idx];
+  if (inventory[s.productIndex]) inventory[s.productIndex].qty += s.qty;
+  sales.splice(idx,1);
+  saveAll();
+  renderInventory();
+  renderSales();
+}
+
+/* Filtrar por fecha */
+function filterSalesByDates(from, to) {
+  if(!from && !to) return sales.slice().reverse();
+  const fromT = from ? new Date(from).setHours(0,0,0,0) : -Infinity;
+  const toT = to ? new Date(to).setHours(23,59,59,999) : Infinity;
+  return sales.filter(s => {
+    const t = new Date(s.date).getTime();
+    return t >= fromT && t <= toT;
+  }).reverse();
+}
+
+/* Quick range */
+applyFilter.addEventListener("click", () => {
+  const fr = fromDate.value;
+  const to = toDate.value;
+  const quick = quickRange.value;
+  if (quick) {
+    const now = new Date();
+    if (quick === "today") {
+      const d = now.toISOString().slice(0,10);
+      fromDate.value = d; toDate.value = d;
+    } else {
+      const days = Number(quick);
+      const start = new Date(); start.setDate(start.getDate() - (days-1));
+      fromDate.value = start.toISOString().slice(0,10);
+      toDate.value = new Date().toISOString().slice(0,10);
+    }
+  }
+  const filtered = filterSalesByDates(fromDate.value, toDate.value);
+  renderSales(filtered);
+});
+
+clearFilter.addEventListener("click", () => {
+  fromDate.value = ""; toDate.value = ""; quickRange.value = "";
+  renderSales();
+});
+
+/* Export ventas CSV (current sales shown) */
+exportSalesCsv && exportSalesCsv.addEventListener("click", () => {
+  // tomamos el rango actualmente filtrado
+  const rows = [["Fecha","Producto","Cantidad","Unitario","Total"]];
+  const filtered = filterSalesByDates(fromDate.value, toDate.value);
+  filtered.forEach(s => rows.push([new Date(s.date).toLocaleString(), s.productName, s.qty, s.unitPrice, s.qty * s.unitPrice]));
+  exportCsv("ventas_michi.csv", rows);
+});
+
+/* ========== GRÁFICA ========== */
+function renderSalesChart(rows) {
+  // generamos suma por día
+  const sums = {};
+  rows.forEach(s => {
+    const d = new Date(s.date);
+    const day = d.toISOString().slice(0,10);
+    sums[day] = (sums[day] || 0) + s.qty * s.unitPrice;
+  });
+
+  // ordenar por fecha asc
+  const labels = Object.keys(sums).sort();
+  const data = labels.map(l => sums[l]);
+
+  if (salesChart) salesChart.destroy();
+  salesChart = new Chart(salesChartCtx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Ventas (COP)',
+        data,
+        backgroundColor: 'rgba(255,45,166,0.8)'
+      }]
+    },
+    options: {
+      responsive:true,
+      scales: { y: { beginAtZero:true } }
+    }
+  });
+}
+
+/* Init render */
 renderInventory();
+renderSales();
+renderProductOptions();
+renderCategories();
+
+/* Export/Import helpers: (opcional, no mostrado en interfaz) */
+window.exportAll = () => {
+  exportCsv("inventario_michi.csv", [["Nombre","Categoria","Qty","Precio"], ...inventory.map(p=>[p.name,p.category,p.qty,p.price])]);
+  exportCsv("ventas_michi.csv", [["Fecha","Producto","Qty","Unitario","Total"], ...sales.map(s=>[s.date,s.productName,s.qty,s.unitPrice,s.qty*s.unitPrice])]);
+};
+
 
