@@ -1,55 +1,142 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Inventario - Heladería Michi</title>
-    <link rel="stylesheet" href="style/style.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Inventario & Ventas - Heladería Michi</title>
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="style/style.css">
+
+  <!-- Chart.js (para gráfica de ventas) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+  <header class="header">
+    <img src="assets/icons/logo-michi.png" alt="Logo Michi" class="logo">
+    <div class="header-text">
+      <h1>Heladería Michi</h1>
+      <p>Inventario & Ventas</p>
+    </div>
+  </header>
 
-    <header class="header">
-        <img src="assets/icons/logo-michi.png" alt="Logo Michi" class="logo">
-        <h1>Inventario • Heladería Michi</h1>
-    </header>
+  <main class="main">
+    <section class="grid">
+      <!-- Card: Agregar / Editar Producto -->
+      <article class="card">
+        <h2>Productos</h2>
+        <form id="productForm">
+          <input id="productId" type="hidden">
+          <label>Nombre</label>
+          <input id="productName" required>
 
-    <main class="container">
+          <label>Categoría</label>
+          <input id="productCategory" placeholder="Helado / Bebida / Topping">
 
-        <section class="card">
-            <h2>Agregar Producto</h2>
-            <form id="productForm">
-                <label>Nombre del producto</label>
-                <input type="text" id="productName" required>
+          <label>Cantidad</label>
+          <input id="productQty" type="number" min="0" value="0" required>
 
-                <label>Cantidad</label>
-                <input type="number" id="productQty" required>
+          <label>Precio (COP)</label>
+          <input id="productPrice" type="number" min="0" value="0" required>
 
-                <label>Precio (COP)</label>
-                <input type="number" id="productPrice" required>
+          <div class="row">
+            <button class="btn" type="submit">Guardar producto</button>
+            <button class="btn ghost" type="button" id="clearProduct">Limpiar</button>
+          </div>
+        </form>
+      </article>
 
-                <button type="submit" class="btn">Agregar</button>
-            </form>
-        </section>
+      <!-- Card: Registrar Venta -->
+      <article class="card">
+        <h2>Registrar Venta</h2>
+        <form id="saleForm">
+          <label>Producto</label>
+          <select id="saleProduct" required></select>
 
-        <section class="card">
-            <h2>Inventario Actual</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Precio</th>
-                        <th>Total</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
-                <tbody id="inventoryTable"></tbody>
-            </table>
-        </section>
+          <label>Cantidad</label>
+          <input id="saleQty" type="number" min="1" value="1" required>
 
-    </main>
+          <label>Precio unitario (COP) — opcional (por defecto toma precio del producto)</label>
+          <input id="salePrice" type="number" min="0">
 
-    <script src="script/app.js"></script>
+          <div class="row">
+            <button class="btn" type="submit">Registrar venta</button>
+            <button class="btn ghost" id="clearSale" type="button">Limpiar</button>
+          </div>
+        </form>
+
+        <hr>
+
+        <h3>Resumen rápido</h3>
+        <p>Total inventario: <strong id="summaryCount">0</strong> productos</p>
+        <p>Valor total inventario: <strong id="summaryValue">$0</strong></p>
+      </article>
+    </section>
+
+    <!-- Tabla inventario y ventas -->
+    <section class="grid-2">
+      <article class="card wide">
+        <h2>Inventario</h2>
+
+        <div class="controls">
+          <input id="searchInv" placeholder="Buscar producto...">
+          <select id="filterCategory"><option value="">Todas las categorías</option></select>
+        </div>
+
+        <table id="inventoryTable">
+          <thead>
+            <tr><th>Producto</th><th>Categoría</th><th>Cantidad</th><th>Precio</th><th>Total</th><th>Acción</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="row small">
+          <button class="btn ghost" id="exportInvCsv">Exportar inventario CSV</button>
+        </div>
+      </article>
+
+      <article class="card wide">
+        <h2>Ventas</h2>
+
+        <div class="controls">
+          <label>Filtrar por fecha:</label>
+          <input type="date" id="fromDate"> hasta <input type="date" id="toDate">
+          <select id="quickRange">
+            <option value="">Rango rápido</option>
+            <option value="today">Hoy</option>
+            <option value="7">Últimos 7 días</option>
+            <option value="30">Últimos 30 días</option>
+          </select>
+          <button class="btn ghost" id="applyFilter">Aplicar</button>
+          <button class="btn ghost" id="clearFilter">Limpiar</button>
+        </div>
+
+        <table id="salesTable">
+          <thead>
+            <tr><th>Fecha</th><th>Producto</th><th>Cant.</th><th>Unit.</th><th>Total</th><th>Acción</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="row small">
+          <p>Total filtrado: <strong id="salesTotal">$0</strong></p>
+          <button class="btn" id="exportSalesCsv">Exportar ventas CSV</button>
+        </div>
+
+        <hr>
+
+        <h3>Gráfica de ventas (filtrada)</h3>
+        <canvas id="salesChart" height="120"></canvas>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Proyecto: Sistema de Inventario & Ventas • Heladería Michi</p>
+  </footer>
+
+  <script src="script/app.js"></script>
 </body>
 </html>
+
 
