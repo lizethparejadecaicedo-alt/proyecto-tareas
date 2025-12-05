@@ -74,4 +74,10 @@ export function listarRecetas() {
 export function agregarReceta(nuevaReceta) {
   recetas.push(nuevaReceta);
 }
+// Hacer la lista de recetas visible globalmente (para app.js)
+window.RECIPES = {};
+
+recetas.forEach(r => {
+  window.RECIPES[r.nombre] = r;
+});
 
