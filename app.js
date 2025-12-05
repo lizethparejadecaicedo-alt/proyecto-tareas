@@ -96,12 +96,10 @@ productForm.addEventListener("submit", function(e){
   if(!name || qty < 0 || price < 0) { alert("Verifica los datos"); return; }
 
   if(idEl.value) {
-    // editar
     const idx = Number(idEl.value);
     inventory[idx] = { name, category, qty, price };
     idEl.value = "";
   } else {
-    // nuevo
     inventory.push({ name, category, qty, price });
   }
 
@@ -151,6 +149,26 @@ exportInvCsv && exportInvCsv.addEventListener("click", () => {
   exportCsv("inventario_michi.csv", rows);
 });
 
+/* ===========================================================
+   ==========  RECETAS AUTOMÁTICAS  ==========================
+   =========================================================== */
+
+function applyRecipe(productName, saleQty) {
+  const recipe = window.RECIPES?.[productName];
+  if (!recipe) return;
+
+  recipe.forEach(item => {
+    const ingredient = inventory.find(p => p.name === item.insumo);
+    if (ingredient) {
+      ingredient.qty -= item.qty * saleQty;
+      if (ingredient.qty < 0) ingredient.qty = 0;
+    }
+  });
+
+  saveAll();
+  renderInventory();
+}
+
 /* ========== SALES FUNCTIONS ========== */
 saleForm.addEventListener("submit", function(e){
   e.preventDefault();
@@ -160,14 +178,11 @@ saleForm.addEventListener("submit", function(e){
   const qty = Number(document.getElementById("saleQty").value);
   if (qty <= 0) { alert("Cantidad incorrecta"); return; }
 
-  // precio puede ser manual o tomar el del producto
   const manualPrice = Number(document.getElementById("salePrice").value);
   const unitPrice = manualPrice > 0 ? manualPrice : inventory[prodIndex].price;
 
-  // verificar stock
   if (inventory[prodIndex].qty < qty) { alert("Stock insuficiente"); return; }
 
-  // crear venta
   const sale = {
     date: new Date().toISOString(),
     productName: inventory[prodIndex].name,
@@ -176,10 +191,12 @@ saleForm.addEventListener("submit", function(e){
     unitPrice
   };
 
-  // restar inventario
+  // DESC. NORMAL
   inventory[prodIndex].qty -= qty;
 
-  // guardar
+  // 🔥 NUEVO: APLICAR RECETA
+  applyRecipe(sale.productName, qty);
+
   sales.push(sale);
   saveAll();
   renderInventory();
@@ -187,9 +204,8 @@ saleForm.addEventListener("submit", function(e){
   saleForm.reset();
 });
 
-/* Render ventas (con filtro) */
+/* Render ventas */
 function renderSales(filtered = null) {
-  // filtered: array de ventas a mostrar. Si es null usamos sales.
   const rows = filtered || sales;
   salesTbody.innerHTML = "";
   let totalAmount = 0;
@@ -216,7 +232,7 @@ function renderSales(filtered = null) {
   renderSalesChart(rows);
 }
 
-/* Eliminar venta (revierte stock) */
+/* Eliminar venta (devuelve stock, pero NO devuelve receta) */
 function deleteSale(idx) {
   if(!confirm("Eliminar venta y devolver stock?")) return;
   const s = sales[idx];
@@ -227,7 +243,7 @@ function deleteSale(idx) {
   renderSales();
 }
 
-/* Filtrar por fecha */
+/* Filtrar ventas */
 function filterSalesByDates(from, to) {
   if(!from && !to) return sales.slice().reverse();
   const fromT = from ? new Date(from).setHours(0,0,0,0) : -Infinity;
@@ -264,9 +280,8 @@ clearFilter.addEventListener("click", () => {
   renderSales();
 });
 
-/* Export ventas CSV (current sales shown) */
+/* Export ventas */
 exportSalesCsv && exportSalesCsv.addEventListener("click", () => {
-  // tomamos el rango actualmente filtrado
   const rows = [["Fecha","Producto","Cantidad","Unitario","Total"]];
   const filtered = filterSalesByDates(fromDate.value, toDate.value);
   filtered.forEach(s => rows.push([new Date(s.date).toLocaleString(), s.productName, s.qty, s.unitPrice, s.qty * s.unitPrice]));
@@ -275,7 +290,6 @@ exportSalesCsv && exportSalesCsv.addEventListener("click", () => {
 
 /* ========== GRÁFICA ========== */
 function renderSalesChart(rows) {
-  // generamos suma por día
   const sums = {};
   rows.forEach(s => {
     const d = new Date(s.date);
@@ -283,7 +297,6 @@ function renderSalesChart(rows) {
     sums[day] = (sums[day] || 0) + s.qty * s.unitPrice;
   });
 
-  // ordenar por fecha asc
   const labels = Object.keys(sums).sort();
   const data = labels.map(l => sums[l]);
 
@@ -310,11 +323,4 @@ renderInventory();
 renderSales();
 renderProductOptions();
 renderCategories();
-
-/* Export/Import helpers: (opcional, no mostrado en interfaz) */
-window.exportAll = () => {
-  exportCsv("inventario_michi.csv", [["Nombre","Categoria","Qty","Precio"], ...inventory.map(p=>[p.name,p.category,p.qty,p.price])]);
-  exportCsv("ventas_michi.csv", [["Fecha","Producto","Qty","Unitario","Total"], ...sales.map(s=>[s.date,s.productName,s.qty,s.unitPrice,s.qty*s.unitPrice])]);
-};
-
 
