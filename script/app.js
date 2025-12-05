@@ -1,6 +1,5 @@
 import { obtenerReceta, listarRecetas } from "./recipes.js";
 
-
 /* ========== Datos persistentes ========== */
 let inventory = JSON.parse(localStorage.getItem("michi_inventory")) || [];
 let sales = JSON.parse(localStorage.getItem("michi_sales")) || [];
@@ -48,10 +47,11 @@ function renderProductOptions() {
 function renderCategories() {
   const cats = [...new Set(inventory.map(i => (i.category || "Sin categoría").trim()))];
   filterCategory.innerHTML = '<option value="">Todas las categorías</option>';
-  cats.forEach(c => filterCategory.innerHTML += `<option value="${c}">${c}</option>`);
+  cats.forEach(c =>
+    filterCategory.innerHTML += `<option value="${c}">${c}</option>`
+  );
 }
 
-/* Render inventario */
 function renderInventory(filterText = "", category = "") {
   inventoryTbody.innerHTML = "";
   let totalValue = 0;
@@ -87,8 +87,8 @@ function renderInventory(filterText = "", category = "") {
   renderCategories();
 }
 
-/* Add / Edit / Delete product */
-productForm.addEventListener("submit", function(e){
+/* ADD / EDIT / DELETE PRODUCT */
+productForm.addEventListener("submit", function (e) {
   e.preventDefault();
   const idEl = document.getElementById("productId");
   const name = document.getElementById("productName").value.trim();
@@ -96,9 +96,9 @@ productForm.addEventListener("submit", function(e){
   const qty = Number(document.getElementById("productQty").value);
   const price = Number(document.getElementById("productPrice").value);
 
-  if(!name || qty < 0 || price < 0) { alert("Verifica los datos"); return; }
+  if (!name || qty < 0 || price < 0) { alert("Verifica los datos"); return; }
 
-  if(idEl.value) {
+  if (idEl.value) {
     const idx = Number(idEl.value);
     inventory[idx] = { name, category, qty, price };
     idEl.value = "";
@@ -118,17 +118,17 @@ function editProduct(idx) {
   document.getElementById("productCategory").value = p.category;
   document.getElementById("productQty").value = p.qty;
   document.getElementById("productPrice").value = p.price;
-  window.scrollTo({top:0,behavior:"smooth"});
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function deleteProduct(idx) {
-  if(!confirm("Eliminar producto?")) return;
-  inventory.splice(idx,1);
+  if (!confirm("Eliminar producto?")) return;
+  inventory.splice(idx, 1);
   saveAll();
   renderInventory();
 }
 
-/* ===== INVENTORY SEARCH FILTERS ===== */
+/* FILTERS */
 searchInv && searchInv.addEventListener("input", (e) => {
   renderInventory(e.target.value, filterCategory.value);
 });
@@ -136,9 +136,9 @@ filterCategory && filterCategory.addEventListener("change", (e) => {
   renderInventory(searchInv.value, e.target.value);
 });
 
-/* Export CSV simple */
+/* EXPORT CSV */
 function exportCsv(filename, rows) {
-  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
@@ -147,7 +147,7 @@ function exportCsv(filename, rows) {
 }
 
 exportInvCsv && exportInvCsv.addEventListener("click", () => {
-  const rows = [["Nombre","Categoría","Cantidad","Precio","Total"]];
+  const rows = [["Nombre", "Categoría", "Cantidad", "Precio", "Total"]];
   inventory.forEach(p => rows.push([p.name, p.category || "", p.qty, p.price, p.qty * p.price]));
   exportCsv("inventario_michi.csv", rows);
 });
@@ -155,7 +155,6 @@ exportInvCsv && exportInvCsv.addEventListener("click", () => {
 /* ===========================================================
    ==========  RECETAS AUTOMÁTICAS  ==========================
    =========================================================== */
-
 function applyRecipe(productName, saleQty) {
   const recipe = window.RECIPES?.[productName];
   if (!recipe) return;
@@ -171,36 +170,14 @@ function applyRecipe(productName, saleQty) {
   saveAll();
   renderInventory();
 }
-function mostrarReceta(nombre) {
-    const receta = obtenerReceta(nombre);
 
-    if (!receta) {
-        alert("❌ No existe una receta con ese nombre.");
-        return;
-    }
-
-    let texto = `📌 Receta: ${receta.nombre}\n\n`;
-    
-    texto += "🍨 Ingredientes:\n";
-    receta.ingredientes.forEach(i => {
-        texto += `- ${i}\n`;
-    });
-
-    texto += "\n🧾 Pasos:\n";
-    receta.pasos.forEach((p, index) => {
-        texto += `${index + 1}. ${p}\n`;
-    });
-
-    texto += `\n💰 Costo estimado: $${receta.costo}`;
-
-    alert(texto);
-}
-
-/* ========== SALES FUNCTIONS ========== */
-saleForm.addEventListener("submit", function(e){
+/* ========== SALES ========== */
+saleForm.addEventListener("submit", function (e) {
   e.preventDefault();
   const prodIndex = Number(document.getElementById("saleProduct").value);
-  if (isNaN(prodIndex) || prodIndex < 0 || !inventory[prodIndex]) { alert("Seleccione producto"); return; }
+  if (isNaN(prodIndex) || prodIndex < 0 || !inventory[prodIndex]) {
+    alert("Seleccione producto"); return;
+  }
 
   const qty = Number(document.getElementById("saleQty").value);
   if (qty <= 0) { alert("Cantidad incorrecta"); return; }
@@ -208,7 +185,9 @@ saleForm.addEventListener("submit", function(e){
   const manualPrice = Number(document.getElementById("salePrice").value);
   const unitPrice = manualPrice > 0 ? manualPrice : inventory[prodIndex].price;
 
-  if (inventory[prodIndex].qty < qty) { alert("Stock insuficiente"); return; }
+  if (inventory[prodIndex].qty < qty) {
+    alert("Stock insuficiente"); return;
+  }
 
   const sale = {
     date: new Date().toISOString(),
@@ -218,10 +197,7 @@ saleForm.addEventListener("submit", function(e){
     unitPrice
   };
 
-  // DESC. NORMAL
   inventory[prodIndex].qty -= qty;
-
-  // 🔥 NUEVO: APLICAR RECETA
   applyRecipe(sale.productName, qty);
 
   sales.push(sale);
@@ -231,7 +207,6 @@ saleForm.addEventListener("submit", function(e){
   saleForm.reset();
 });
 
-/* Render ventas */
 function renderSales(filtered = null) {
   const rows = filtered || sales;
   salesTbody.innerHTML = "";
@@ -241,6 +216,7 @@ function renderSales(filtered = null) {
     const date = new Date(s.date);
     const total = s.qty * s.unitPrice;
     totalAmount += total;
+
     salesTbody.innerHTML += `
       <tr>
         <td>${date.toLocaleString()}</td>
@@ -259,45 +235,46 @@ function renderSales(filtered = null) {
   renderSalesChart(rows);
 }
 
-/* Eliminar venta (devuelve stock, pero NO devuelve receta) */
 function deleteSale(idx) {
-  if(!confirm("Eliminar venta y devolver stock?")) return;
+  if (!confirm("Eliminar venta y devolver stock?")) return;
   const s = sales[idx];
   if (inventory[s.productIndex]) inventory[s.productIndex].qty += s.qty;
-  sales.splice(idx,1);
+  sales.splice(idx, 1);
   saveAll();
   renderInventory();
   renderSales();
 }
 
-/* Filtrar ventas */
+/* FILTER SALES BY DATE */
 function filterSalesByDates(from, to) {
-  if(!from && !to) return sales.slice().reverse();
-  const fromT = from ? new Date(from).setHours(0,0,0,0) : -Infinity;
-  const toT = to ? new Date(to).setHours(23,59,59,999) : Infinity;
+  if (!from && !to) return sales.slice().reverse();
+  const fromT = from ? new Date(from).setHours(0, 0, 0, 0) : -Infinity;
+  const toT = to ? new Date(to).setHours(23, 59, 59, 999) : Infinity;
+
   return sales.filter(s => {
     const t = new Date(s.date).getTime();
     return t >= fromT && t <= toT;
   }).reverse();
 }
 
-/* Quick range */
 applyFilter.addEventListener("click", () => {
   const fr = fromDate.value;
   const to = toDate.value;
   const quick = quickRange.value;
+
   if (quick) {
     const now = new Date();
     if (quick === "today") {
-      const d = now.toISOString().slice(0,10);
+      const d = now.toISOString().slice(0, 10);
       fromDate.value = d; toDate.value = d;
     } else {
       const days = Number(quick);
-      const start = new Date(); start.setDate(start.getDate() - (days-1));
-      fromDate.value = start.toISOString().slice(0,10);
-      toDate.value = new Date().toISOString().slice(0,10);
+      const start = new Date(); start.setDate(start.getDate() - (days - 1));
+      fromDate.value = start.toISOString().slice(0, 10);
+      toDate.value = new Date().toISOString().slice(0, 10);
     }
   }
+
   const filtered = filterSalesByDates(fromDate.value, toDate.value);
   renderSales(filtered);
 });
@@ -307,20 +284,28 @@ clearFilter.addEventListener("click", () => {
   renderSales();
 });
 
-/* Export ventas */
+/* EXPORT VENTAS */
 exportSalesCsv && exportSalesCsv.addEventListener("click", () => {
-  const rows = [["Fecha","Producto","Cantidad","Unitario","Total"]];
+  const rows = [["Fecha", "Producto", "Cantidad", "Unitario", "Total"]];
   const filtered = filterSalesByDates(fromDate.value, toDate.value);
-  filtered.forEach(s => rows.push([new Date(s.date).toLocaleString(), s.productName, s.qty, s.unitPrice, s.qty * s.unitPrice]));
+
+  filtered.forEach(s => rows.push([
+    new Date(s.date).toLocaleString(),
+    s.productName,
+    s.qty,
+    s.unitPrice,
+    s.qty * s.unitPrice
+  ]));
+
   exportCsv("ventas_michi.csv", rows);
 });
 
-/* ========== GRÁFICA ========== */
+/* ========== CHART ========== */
 function renderSalesChart(rows) {
   const sums = {};
   rows.forEach(s => {
     const d = new Date(s.date);
-    const day = d.toISOString().slice(0,10);
+    const day = d.toISOString().slice(0, 10);
     sums[day] = (sums[day] || 0) + s.qty * s.unitPrice;
   });
 
@@ -328,6 +313,7 @@ function renderSalesChart(rows) {
   const data = labels.map(l => sums[l]);
 
   if (salesChart) salesChart.destroy();
+
   salesChart = new Chart(salesChartCtx, {
     type: 'bar',
     data: {
@@ -339,27 +325,21 @@ function renderSalesChart(rows) {
       }]
     },
     options: {
-      responsive:true,
-      scales: { y: { beginAtZero:true } }
+      responsive: true,
+      scales: { y: { beginAtZero: true } }
     }
   });
 }
 
-/* Init render */
+/* INIT */
 renderInventory();
 renderSales();
 renderProductOptions();
 renderCategories();
 
-/* ========= Botón para buscar receta ========= */
-document.getElementById("btnBuscarReceta").addEventListener("click", () => {
-    const nombre = document.getElementById("inputReceta").value.trim();
-    mostrarReceta(nombre);
-});
-
-/*******************************
- *  BÚSQUEDA DE RECETAS (IA)  *
- *******************************/
+/* ===================================================
+      BUSCAR RECETA CON API (ThemealDB)
+   =================================================== */
 document.getElementById("btnBuscarReceta").addEventListener("click", async () => {
   const nombre = document.getElementById("inputReceta").value.trim();
 
@@ -368,7 +348,6 @@ document.getElementById("btnBuscarReceta").addEventListener("click", async () =>
     return;
   }
 
-  // 🔥 Llamada a la API gratuita ThemealDB
   const url = `https://www.themealdb.com/api/json/v1/1/search.php?s=${nombre}`;
 
   try {
@@ -382,7 +361,6 @@ document.getElementById("btnBuscarReceta").addEventListener("click", async () =>
 
     const receta = data.meals[0];
 
-    // Construir texto bonito
     let ingredientes = "";
     for (let i = 1; i <= 20; i++) {
       const ing = receta[`strIngredient${i}`];
@@ -392,17 +370,6 @@ document.getElementById("btnBuscarReceta").addEventListener("click", async () =>
       }
     }
 
-    const resultado = 
+    const resultado =
       `🍨 *${receta.strMeal}*\n\n` +
-      `📌 *Categoría:* ${receta.strCategory}\n` +
-      `🌍 *Origen:* ${receta.strArea}\n\n` +
-      `🥄 *Ingredientes:*\n${ingredientes}\n` +
-      `📖 *Instrucciones:*\n${receta.strInstructions}`;
-
-    alert(resultado);
-
-  } catch (err) {
-    console.error(err);
-    alert("Error buscando la receta.");
-  }
-});
+      `📌 *Categ*
