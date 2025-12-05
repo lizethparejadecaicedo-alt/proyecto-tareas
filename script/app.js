@@ -170,6 +170,30 @@ function applyRecipe(productName, saleQty) {
   saveAll();
   renderInventory();
 }
+function mostrarReceta(nombre) {
+    const receta = obtenerReceta(nombre);
+
+    if (!receta) {
+        alert("❌ No existe una receta con ese nombre.");
+        return;
+    }
+
+    let texto = `📌 Receta: ${receta.nombre}\n\n`;
+    
+    texto += "🍨 Ingredientes:\n";
+    receta.ingredientes.forEach(i => {
+        texto += `- ${i}\n`;
+    });
+
+    texto += "\n🧾 Pasos:\n";
+    receta.pasos.forEach((p, index) => {
+        texto += `${index + 1}. ${p}\n`;
+    });
+
+    texto += `\n💰 Costo estimado: $${receta.costo}`;
+
+    alert(texto);
+}
 
 /* ========== SALES FUNCTIONS ========== */
 saleForm.addEventListener("submit", function(e){
