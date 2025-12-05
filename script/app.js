@@ -349,3 +349,10 @@ renderInventory();
 renderSales();
 renderProductOptions();
 renderCategories();
+
+/* ========= Botón para buscar receta ========= */
+document.getElementById("btnBuscarReceta").addEventListener("click", () => {
+    const nombre = document.getElementById("inputReceta").value.trim();
+    mostrarReceta(nombre);
+});
+
