@@ -1,3 +1,5 @@
+import { obtenerReceta, listarRecetas } from "./script/recipes.js";
+
 /* ========== Datos persistentes ========== */
 let inventory = JSON.parse(localStorage.getItem("michi_inventory")) || [];
 let sales = JSON.parse(localStorage.getItem("michi_sales")) || [];
