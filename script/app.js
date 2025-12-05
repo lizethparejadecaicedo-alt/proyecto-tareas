@@ -1,4 +1,5 @@
-import { obtenerReceta, listarRecetas } from "./script/recipes.js";
+import { obtenerReceta, listarRecetas } from "./recipes.js";
+
 
 /* ========== Datos persistentes ========== */
 let inventory = JSON.parse(localStorage.getItem("michi_inventory")) || [];
