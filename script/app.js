@@ -357,3 +357,52 @@ document.getElementById("btnBuscarReceta").addEventListener("click", () => {
     mostrarReceta(nombre);
 });
 
+/*******************************
+ *  BÚSQUEDA DE RECETAS (IA)  *
+ *******************************/
+document.getElementById("btnBuscarReceta").addEventListener("click", async () => {
+  const nombre = document.getElementById("inputReceta").value.trim();
+
+  if (!nombre) {
+    alert("Escribe el nombre de una receta.");
+    return;
+  }
+
+  // 🔥 Llamada a la API gratuita ThemealDB
+  const url = `https://www.themealdb.com/api/json/v1/1/search.php?s=${nombre}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data.meals) {
+      alert("No encontré una receta con ese nombre.");
+      return;
+    }
+
+    const receta = data.meals[0];
+
+    // Construir texto bonito
+    let ingredientes = "";
+    for (let i = 1; i <= 20; i++) {
+      const ing = receta[`strIngredient${i}`];
+      const cant = receta[`strMeasure${i}`];
+      if (ing && ing.trim() !== "") {
+        ingredientes += `• ${ing} - ${cant}\n`;
+      }
+    }
+
+    const resultado = 
+      `🍨 *${receta.strMeal}*\n\n` +
+      `📌 *Categoría:* ${receta.strCategory}\n` +
+      `🌍 *Origen:* ${receta.strArea}\n\n` +
+      `🥄 *Ingredientes:*\n${ingredientes}\n` +
+      `📖 *Instrucciones:*\n${receta.strInstructions}`;
+
+    alert(resultado);
+
+  } catch (err) {
+    console.error(err);
+    alert("Error buscando la receta.");
+  }
+});
