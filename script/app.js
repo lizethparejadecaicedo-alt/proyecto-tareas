@@ -177,4 +177,50 @@ function renderSales() {
 renderInventory();
 renderSales();
 
+// Función para agregar receta
+document.getElementById("recipeForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const recipeName = document.getElementById("recipeName").value.trim();
+  const recipeItems = document.getElementById("recipeItems").value.trim().split(",").map(item => {
+    const [insumo, qty] = item.split(" ");
+    return { insumo, qty: Number(qty) };
+  });
+
+  if (!recipeName || recipeItems.length === 0) {
+    alert("Por favor ingrese todos los datos correctamente.");
+    return;
+  }
+
+  // Guardar receta
+  recipes.push({ name: recipeName, items: recipeItems });
+  saveRecipes();  // Guarda en localStorage
+
+  // Limpiar formulario
+  document.getElementById("recipeForm").reset();
+  alert("Receta guardada correctamente");
+
+  // Mostrar la receta (opcional)
+  renderRecipes();
+});
+
+// Función para renderizar las recetas (mostrar las recetas creadas)
+function renderRecipes() {
+  const recipeList = document.getElementById("recipesList");
+  recipeList.innerHTML = "";
+
+  recipes.forEach(recipe => {
+    recipeList.innerHTML += `
+      <div class="recipe">
+        <h4>${recipe.name}</h4>
+        <ul>
+          ${recipe.items.map(item => `<li>${item.insumo}: ${item.qty} unidades</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  });
+}
+
+// Llamar a la función de renderizado al cargar la página
+renderRecipes();
 
