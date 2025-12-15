@@ -370,6 +370,17 @@ document.getElementById("btnBuscarReceta").addEventListener("click", async () =>
       }
     }
 
-    const resultado =
-      `🍨 *${receta.strMeal}*\n\n` +
-      `📌 *Categ*
+const resultado =
+  `🍨 ${receta.strMeal}\n\n` +
+  `📌 Categoría: ${receta.strCategory}\n\n` +
+  `🧾 Ingredientes:\n${ingredientes}`;
+
+alert(resultado);
+
+} catch (error) {
+  console.error("Error al buscar receta:", error);
+  alert("Ocurrió un error al buscar la receta.");
+}
+
+});
+
