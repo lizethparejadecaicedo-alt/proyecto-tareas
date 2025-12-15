@@ -224,19 +224,14 @@ function renderRecipes() {
 // Llamar a la función de renderizado al cargar la página
 renderRecipes();
 
-/***********************
- * RECETAS
- ***********************/
-
-// Cargar recetas desde localStorage
-let recipes = JSON.parse(localStorage.getItem("recipes")) || [];
+/* ================== RECETAS ================== */
 
 // Guardar recetas
 function saveRecipes() {
-  localStorage.setItem("recipes", JSON.stringify(recipes));
+  localStorage.setItem("michi_recipes", JSON.stringify(recipes));
 }
 
-// Mostrar recetas en pantalla
+// Renderizar recetas
 function renderRecipes() {
   const list = document.getElementById("recipesList");
   if (!list) return;
@@ -254,12 +249,20 @@ function renderRecipes() {
     div.innerHTML = `
       <strong>${recipe.name}</strong>
       <ul>
-        ${recipe.items.map(i => `<li>${i.name}: ${i.qty}</li>`).join("")}
+        ${recipe.items.map(i => `<li>${i.insumo}: ${i.qty}</li>`).join("")}
       </ul>
-      <button class="btn ghost" data-index="${index}">Eliminar</button>
+      <button class="btn ghost" onclick="deleteRecipe(${index})">Eliminar</button>
     `;
     list.appendChild(div);
   });
+}
+
+// Eliminar receta
+function deleteRecipe(index) {
+  if (!confirm("Eliminar receta?")) return;
+  recipes.splice(index, 1);
+  saveRecipes();
+  renderRecipes();
 }
 
 // Guardar receta desde formulario
@@ -280,7 +283,7 @@ if (recipeForm) {
     const items = itemsText.split(",").map(item => {
       const parts = item.trim().split(" ");
       return {
-        name: parts.slice(0, -1).join(" "),
+        insumo: parts.slice(0, -1).join(" "),
         qty: Number(parts[parts.length - 1])
       };
     });
