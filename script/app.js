@@ -24,6 +24,9 @@ const saleProductSelect = document.getElementById("saleProduct");
 const summaryCount = document.getElementById("summaryCount");
 const summaryValue = document.getElementById("summaryValue");
 
+const recipeForm = document.getElementById("recipeForm");
+const recipesList = document.getElementById("recipesList");
+
 /* ================== INVENTARIO ================== */
 function renderInventory() {
   inventoryTbody.innerHTML = "";
@@ -88,25 +91,64 @@ function deleteProduct(i) {
   renderInventory();
 }
 
-/* ================== RECETAS (REALES) ================== */
-/*
-Ejemplo receta:
-Helado de fresa
-- Leche 200
-- Azúcar 50
-- Fresa 100
-*/
+/* ================== RECETAS ================== */
+function renderRecipes() {
+  if (!recipesList) return;
 
-if (recipes.length === 0) {
-  recipes.push({
-    name: "Helado de fresa",
-    items: [
-      { insumo: "Leche", qty: 200 },
-      { insumo: "Azúcar", qty: 50 },
-      { insumo: "Fresa", qty: 100 }
-    ]
+  recipesList.innerHTML = "";
+
+  if (recipes.length === 0) {
+    recipesList.innerHTML = "<p>No hay recetas creadas.</p>";
+    return;
+  }
+
+  recipes.forEach((recipe, index) => {
+    const div = document.createElement("div");
+    div.className = "recipe-card";
+    div.innerHTML = `
+      <strong>${recipe.name}</strong>
+      <ul>
+        ${recipe.items.map(i => `<li>${i.insumo}: ${i.qty}</li>`).join("")}
+      </ul>
+      <button class="btn ghost" onclick="deleteRecipe(${index})">Eliminar</button>
+    `;
+    recipesList.appendChild(div);
   });
+}
+
+function deleteRecipe(index) {
+  if (!confirm("Eliminar receta?")) return;
+  recipes.splice(index, 1);
   saveAll();
+  renderRecipes();
+}
+
+if (recipeForm) {
+  recipeForm.addEventListener("submit", e => {
+    e.preventDefault();
+
+    const name = document.getElementById("recipeName").value.trim();
+    const itemsText = document.getElementById("recipeItems").value.trim();
+
+    if (!name || !itemsText) {
+      alert("Completa todos los campos");
+      return;
+    }
+
+    const items = itemsText.split(",").map(item => {
+      const parts = item.trim().split(" ");
+      return {
+        insumo: parts.slice(0, -1).join(" "),
+        qty: Number(parts[parts.length - 1])
+      };
+    });
+
+    recipes.push({ name, items });
+    saveAll();
+    renderRecipes();
+    recipeForm.reset();
+    alert("Receta guardada correctamente ✅");
+  });
 }
 
 /* ================== APLICAR RECETA ================== */
@@ -160,7 +202,7 @@ saleForm.addEventListener("submit", e => {
 /* ================== LISTAR VENTAS ================== */
 function renderSales() {
   salesTbody.innerHTML = "";
-  sales.forEach((s, i) => {
+  sales.forEach(s => {
     salesTbody.innerHTML += `
       <tr>
         <td>${new Date(s.date).toLocaleString()}</td>
@@ -176,126 +218,5 @@ function renderSales() {
 /* ================== INIT ================== */
 renderInventory();
 renderSales();
-
-// Función para agregar receta
-document.getElementById("recipeForm").addEventListener("submit", function (e) {
-  e.preventDefault();
-
-  const recipeName = document.getElementById("recipeName").value.trim();
-  const recipeItems = document.getElementById("recipeItems").value.trim().split(",").map(item => {
-    const [insumo, qty] = item.split(" ");
-    return { insumo, qty: Number(qty) };
-  });
-
-  if (!recipeName || recipeItems.length === 0) {
-    alert("Por favor ingrese todos los datos correctamente.");
-    return;
-  }
-
-  // Guardar receta
-  recipes.push({ name: recipeName, items: recipeItems });
-  saveRecipes();  // Guarda en localStorage
-
-  // Limpiar formulario
-  document.getElementById("recipeForm").reset();
-  alert("Receta guardada correctamente");
-
-  // Mostrar la receta (opcional)
-  renderRecipes();
-});
-
-// Función para renderizar las recetas (mostrar las recetas creadas)
-function renderRecipes() {
-  const recipeList = document.getElementById("recipesList");
-  recipeList.innerHTML = "";
-
-  recipes.forEach(recipe => {
-    recipeList.innerHTML += `
-      <div class="recipe">
-        <h4>${recipe.name}</h4>
-        <ul>
-          ${recipe.items.map(item => `<li>${item.insumo}: ${item.qty} unidades</li>`).join('')}
-        </ul>
-      </div>
-    `;
-  });
-}
-
-// Llamar a la función de renderizado al cargar la página
 renderRecipes();
 
-/* ================== RECETAS ================== */
-
-// Guardar recetas
-function saveRecipes() {
-  localStorage.setItem("michi_recipes", JSON.stringify(recipes));
-}
-
-// Renderizar recetas
-function renderRecipes() {
-  const list = document.getElementById("recipesList");
-  if (!list) return;
-
-  list.innerHTML = "";
-
-  if (recipes.length === 0) {
-    list.innerHTML = "<p>No hay recetas creadas.</p>";
-    return;
-  }
-
-  recipes.forEach((recipe, index) => {
-    const div = document.createElement("div");
-    div.className = "recipe-card";
-    div.innerHTML = `
-      <strong>${recipe.name}</strong>
-      <ul>
-        ${recipe.items.map(i => `<li>${i.insumo}: ${i.qty}</li>`).join("")}
-      </ul>
-      <button class="btn ghost" onclick="deleteRecipe(${index})">Eliminar</button>
-    `;
-    list.appendChild(div);
-  });
-}
-
-// Eliminar receta
-function deleteRecipe(index) {
-  if (!confirm("Eliminar receta?")) return;
-  recipes.splice(index, 1);
-  saveRecipes();
-  renderRecipes();
-}
-
-// Guardar receta desde formulario
-const recipeForm = document.getElementById("recipeForm");
-
-if (recipeForm) {
-  recipeForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-
-    const name = document.getElementById("recipeName").value.trim();
-    const itemsText = document.getElementById("recipeItems").value.trim();
-
-    if (!name || !itemsText) {
-      alert("Completa todos los campos");
-      return;
-    }
-
-    const items = itemsText.split(",").map(item => {
-      const parts = item.trim().split(" ");
-      return {
-        insumo: parts.slice(0, -1).join(" "),
-        qty: Number(parts[parts.length - 1])
-      };
-    });
-
-    recipes.push({ name, items });
-    saveRecipes();
-    renderRecipes();
-
-    recipeForm.reset();
-    alert("Receta guardada correctamente ✅");
-  });
-}
-
-// Cargar recetas al iniciar
-renderRecipes();
