@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Inventario & Ventas - Heladería Michi</title>
 
   <!-- Estilos -->
@@ -11,11 +11,12 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
   <!-- ENCABEZADO -->
   <header class="header">
-  <img src="assets/icons/logo-michi.png.jpeg" alt="Logo Michi" class="logo">
+    <img src="assets/icons/logo-michi.png.jpeg" alt="Logo Michi" class="logo">
 
     <div class="header-text">
       <h1>Heladería Michi</h1>
@@ -25,10 +26,13 @@
 
   <main class="main">
 
-    <!-- SECCIÓN: PRODUCTOS -->
+    <!-- PRODUCTOS + VENTAS -->
     <section class="grid">
+
+      <!-- PRODUCTOS -->
       <article class="card">
         <h2>Productos</h2>
+
         <form id="productForm">
           <input id="productId" type="hidden">
 
@@ -51,7 +55,7 @@
         </form>
       </article>
 
-      <!-- SECCIÓN: REGISTRAR VENTA -->
+      <!-- REGISTRAR VENTA -->
       <article class="card">
         <h2>Registrar Venta</h2>
 
@@ -67,7 +71,7 @@
 
           <div class="row">
             <button class="btn" type="submit">Registrar venta</button>
-            <button class="btn ghost" id="clearSale" type="button">Limpiar</button>
+            <button class="btn ghost" type="button" id="clearSale">Limpiar</button>
           </div>
         </form>
 
@@ -78,35 +82,37 @@
         <p>Valor total inventario: <strong id="summaryValue">$0</strong></p>
       </article>
     </section>
-<!-- SECCIÓN DE RECETAS -->
-<section id="recipes">
-  <h2>Recetas de productos</h2>
-  <p>Las recetas se aplican automáticamente al registrar una venta.</p>
 
-  <div class="info-box">
-    <p>
-      📌 Este sistema descuenta insumos del inventario según la receta del producto vendido.
-    </p>
-    <p>
-      🧾 Ejemplo: Vender un Helado de fresa descuenta leche, azúcar y fruta.
-    </p>
-  </div>
-</section>
+    <!-- RECETAS -->
+    <section id="recipes" class="card">
+      <h2>Recetas de productos</h2>
+      <p>Las recetas se aplican automáticamente al registrar una venta.</p>
 
-<h3>Crear nueva receta</h3>
-<form id="recipeForm">
-  <label>Nombre de la receta</label>
-  <input id="recipeName" required>
+      <div class="info-box">
+        <p>📌 Este sistema descuenta insumos del inventario según la receta del producto vendido.</p>
+        <p>🧾 Ejemplo: Vender un Helado de fresa descuenta leche, azúcar y fruta.</p>
+      </div>
 
-  <label>Insumos (Nombre y cantidad separados por coma, ejemplo: Leche 200)</label>
-  <textarea id="recipeItems" placeholder="Ejemplo: Leche 200, Azúcar 50" required></textarea>
+      <h3>Crear nueva receta</h3>
+      <form id="recipeForm">
+        <label>Nombre de la receta</label>
+        <input id="recipeName" required>
 
-  <div class="row">
-    <button class="btn" type="submit">Guardar receta</button>
-  </div>
-</form>
-<h3>Recetas guardadas</h3>
-<div id="recipesList"></div>
+        <label>Insumos (Nombre y cantidad separados por coma)</label>
+        <textarea
+          id="recipeItems"
+          placeholder="Ejemplo: Leche 200, Azúcar 50"
+          required
+        ></textarea>
+
+        <div class="row">
+          <button class="btn" type="submit">Guardar receta</button>
+        </div>
+      </form>
+
+      <h3>Recetas guardadas</h3>
+      <div id="recipesList"></div>
+    </section>
 
     <!-- INVENTARIO + VENTAS -->
     <section class="grid-2">
@@ -125,8 +131,12 @@
         <table id="inventoryTable">
           <thead>
             <tr>
-              <th>Producto</th><th>Categoría</th><th>Cantidad</th>
-              <th>Precio</th><th>Total</th><th>Acción</th>
+              <th>Producto</th>
+              <th>Categoría</th>
+              <th>Cantidad</th>
+              <th>Precio</th>
+              <th>Total</th>
+              <th>Acción</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -143,7 +153,8 @@
 
         <div class="controls">
           <label>Filtrar por fecha:</label>
-          <input type="date" id="fromDate"> hasta
+          <input type="date" id="fromDate">
+          hasta
           <input type="date" id="toDate">
 
           <select id="quickRange">
@@ -160,8 +171,12 @@
         <table id="salesTable">
           <thead>
             <tr>
-              <th>Fecha</th><th>Producto</th><th>Cant.</th>
-              <th>Unit.</th><th>Total</th><th>Acción</th>
+              <th>Fecha</th>
+              <th>Producto</th>
+              <th>Cant.</th>
+              <th>Unit.</th>
+              <th>Total</th>
+              <th>Acción</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -180,19 +195,15 @@
     </section>
   </main>
 
+  <!-- FOOTER -->
   <footer class="footer">
     <p>Proyecto: Sistema de Inventario & Ventas • Heladería Michi</p>
   </footer>
 
-  <!-- SCRIPT PRINCIPAL -->
-<script type="module" src="script/app.js"></script>
-
-
-
+  <!-- SCRIPT -->
+  <script type="module" src="script/app.js"></script>
 
 </body>
 </html>
-
-
 
 
