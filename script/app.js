@@ -224,3 +224,75 @@ function renderRecipes() {
 // Llamar a la función de renderizado al cargar la página
 renderRecipes();
 
+/***********************
+ * RECETAS
+ ***********************/
+
+// Cargar recetas desde localStorage
+let recipes = JSON.parse(localStorage.getItem("recipes")) || [];
+
+// Guardar recetas
+function saveRecipes() {
+  localStorage.setItem("recipes", JSON.stringify(recipes));
+}
+
+// Mostrar recetas en pantalla
+function renderRecipes() {
+  const list = document.getElementById("recipesList");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  if (recipes.length === 0) {
+    list.innerHTML = "<p>No hay recetas creadas.</p>";
+    return;
+  }
+
+  recipes.forEach((recipe, index) => {
+    const div = document.createElement("div");
+    div.className = "recipe-card";
+    div.innerHTML = `
+      <strong>${recipe.name}</strong>
+      <ul>
+        ${recipe.items.map(i => `<li>${i.name}: ${i.qty}</li>`).join("")}
+      </ul>
+      <button class="btn ghost" data-index="${index}">Eliminar</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// Guardar receta desde formulario
+const recipeForm = document.getElementById("recipeForm");
+
+if (recipeForm) {
+  recipeForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const name = document.getElementById("recipeName").value.trim();
+    const itemsText = document.getElementById("recipeItems").value.trim();
+
+    if (!name || !itemsText) {
+      alert("Completa todos los campos");
+      return;
+    }
+
+    const items = itemsText.split(",").map(item => {
+      const parts = item.trim().split(" ");
+      return {
+        name: parts.slice(0, -1).join(" "),
+        qty: Number(parts[parts.length - 1])
+      };
+    });
+
+    recipes.push({ name, items });
+    saveRecipes();
+    renderRecipes();
+
+    recipeForm.reset();
+    alert("Receta guardada correctamente ✅");
+  });
+}
+
+// Cargar recetas al iniciar
+renderRecipes();
