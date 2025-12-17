@@ -54,13 +54,31 @@ function renderInventory() {
 
   summaryCount.textContent = totalQty;
   summaryValue.textContent = money(totalValue);
-  renderProductOptions();
+
+  renderSaleOptions();
 }
 
-function renderProductOptions() {
+function deleteProduct(i) {
+  if (!confirm("Eliminar producto?")) return;
+  inventory.splice(i, 1);
+  saveAll();
+  renderInventory();
+}
+
+/* ================== OPCIONES DE VENTA ================== */
+function renderSaleOptions() {
   saleProductSelect.innerHTML = '<option value="">Seleccione...</option>';
+
   inventory.forEach((p, i) => {
-    saleProductSelect.innerHTML += `<option value="${i}">${p.name}</option>`;
+    saleProductSelect.innerHTML += `
+      <option value="product-${i}">🧾 ${p.name}</option>
+    `;
+  });
+
+  recipes.forEach((r, i) => {
+    saleProductSelect.innerHTML += `
+      <option value="recipe-${i}">🍨 ${r.name}</option>
+    `;
   });
 }
 
@@ -84,13 +102,6 @@ productForm.addEventListener("submit", e => {
   productForm.reset();
 });
 
-function deleteProduct(i) {
-  if (!confirm("Eliminar producto?")) return;
-  inventory.splice(i, 1);
-  saveAll();
-  renderInventory();
-}
-
 /* ================== RECETAS ================== */
 function renderRecipes() {
   if (!recipesList) return;
@@ -103,16 +114,15 @@ function renderRecipes() {
   }
 
   recipes.forEach((recipe, index) => {
-    const div = document.createElement("div");
-    div.className = "recipe-card";
-    div.innerHTML = `
-      <strong>${recipe.name}</strong>
-      <ul>
-        ${recipe.items.map(i => `<li>${i.insumo}: ${i.qty}</li>`).join("")}
-      </ul>
-      <button class="btn ghost" onclick="deleteRecipe(${index})">Eliminar</button>
+    recipesList.innerHTML += `
+      <div class="recipe-card">
+        <strong>${recipe.name}</strong>
+        <ul>
+          ${recipe.items.map(i => `<li>${i.insumo}: ${i.qty}</li>`).join("")}
+        </ul>
+        <button onclick="deleteRecipe(${index})">Eliminar</button>
+      </div>
     `;
-    recipesList.appendChild(div);
   });
 }
 
@@ -121,6 +131,7 @@ function deleteRecipe(index) {
   recipes.splice(index, 1);
   saveAll();
   renderRecipes();
+  renderSaleOptions();
 }
 
 if (recipeForm) {
@@ -146,15 +157,14 @@ if (recipeForm) {
     recipes.push({ name, items });
     saveAll();
     renderRecipes();
+    renderSaleOptions();
     recipeForm.reset();
-    alert("Receta guardada correctamente ✅");
   });
 }
 
 /* ================== APLICAR RECETA ================== */
-function applyRecipe(productName, saleQty) {
-  const recipe = recipes.find(r => r.name === productName);
-  if (!recipe) return;
+function applyRecipe(recipeIndex, saleQty) {
+  const recipe = recipes[recipeIndex];
 
   recipe.items.forEach(item => {
     const prod = inventory.find(p => p.name === item.insumo);
@@ -169,26 +179,36 @@ function applyRecipe(productName, saleQty) {
 saleForm.addEventListener("submit", e => {
   e.preventDefault();
 
-  const idx = Number(saleForm.saleProduct.value);
+  const value = saleForm.saleProduct.value;
   const qty = Number(saleForm.saleQty.value);
-  const price = Number(saleForm.salePrice.value) || inventory[idx].price;
+  const price = Number(saleForm.salePrice.value) || 0;
 
-  if (!inventory[idx] || qty <= 0) {
+  if (!value || qty <= 0) {
     alert("Venta inválida");
     return;
   }
 
-  if (inventory[idx].qty < qty) {
-    alert("Stock insuficiente");
-    return;
+  const [type, index] = value.split("-");
+  let productName = "";
+
+  if (type === "product") {
+    const prod = inventory[index];
+    if (prod.qty < qty) {
+      alert("Stock insuficiente");
+      return;
+    }
+    prod.qty -= qty;
+    productName = prod.name;
   }
 
-  inventory[idx].qty -= qty;
-  applyRecipe(inventory[idx].name, qty);
+  if (type === "recipe") {
+    applyRecipe(index, qty);
+    productName = recipes[index].name;
+  }
 
   sales.push({
     date: new Date().toISOString(),
-    product: inventory[idx].name,
+    product: productName,
     qty,
     price
   });
@@ -219,4 +239,5 @@ function renderSales() {
 renderInventory();
 renderSales();
 renderRecipes();
+renderSaleOptions();
 
