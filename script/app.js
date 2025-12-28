@@ -46,7 +46,7 @@ function renderInventory() {
         <td>${money(p.price)}</td>
         <td>${money(total)}</td>
         <td>
-          <button onclick="deleteProduct(${i})">Eliminar</button>
+          <button type="button" onclick="deleteProduct(${i})">Eliminar</button>
         </td>
       </tr>
     `;
@@ -118,9 +118,11 @@ function renderRecipes() {
       <div class="recipe-card">
         <strong>${recipe.name}</strong>
         <ul>
-          ${recipe.items.map(i => `<li>${i.insumo}: ${i.qty}</li>`).join("")}
+          ${recipe.items
+            .map(i => `<li>${i.insumo}: ${i.qty}</li>`)
+            .join("")}
         </ul>
-        <button onclick="deleteRecipe(${index})">Eliminar</button>
+        <button type="button" onclick="deleteRecipe(${index})">Eliminar</button>
       </div>
     `;
   });
@@ -146,11 +148,12 @@ if (recipeForm) {
       return;
     }
 
+    // FORMATO: Leche:2, Azúcar:1
     const items = itemsText.split(",").map(item => {
-      const parts = item.trim().split(" ");
+      const [insumo, qty] = item.split(":").map(p => p.trim());
       return {
-        insumo: parts.slice(0, -1).join(" "),
-        qty: Number(parts[parts.length - 1])
+        insumo,
+        qty: Number(qty)
       };
     });
 
@@ -166,13 +169,36 @@ if (recipeForm) {
 function applyRecipe(recipeIndex, saleQty) {
   const recipe = recipes[recipeIndex];
 
-  recipe.items.forEach(item => {
-    const prod = inventory.find(p => p.name === item.insumo);
-    if (prod) {
-      prod.qty -= item.qty * saleQty;
-      if (prod.qty < 0) prod.qty = 0;
+  // Verificar stock
+  for (let item of recipe.items) {
+    const prod = inventory.find(
+      p =>
+        p.name.trim().toLowerCase() ===
+        item.insumo.trim().toLowerCase()
+    );
+
+    if (!prod) {
+      alert(`El insumo "${item.insumo}" no existe en inventario`);
+      return false;
     }
+
+    if (prod.qty < item.qty * saleQty) {
+      alert(`Stock insuficiente de ${prod.name}`);
+      return false;
+    }
+  }
+
+  // Descontar
+  recipe.items.forEach(item => {
+    const prod = inventory.find(
+      p =>
+        p.name.trim().toLowerCase() ===
+        item.insumo.trim().toLowerCase()
+    );
+    prod.qty -= item.qty * saleQty;
   });
+
+  return true;
 }
 
 /* ================== VENTAS ================== */
@@ -202,7 +228,8 @@ saleForm.addEventListener("submit", e => {
   }
 
   if (type === "recipe") {
-    applyRecipe(index, qty);
+    const ok = applyRecipe(index, qty);
+    if (!ok) return;
     productName = recipes[index].name;
   }
 
@@ -240,4 +267,3 @@ renderInventory();
 renderSales();
 renderRecipes();
 renderSaleOptions();
-
