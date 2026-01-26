@@ -26,6 +26,35 @@ const summaryCount = document.getElementById("summaryCount");
 const summaryValue = document.getElementById("summaryValue");
 
 /* ================== INVENTARIO ================== */
+
+/* ================== EXPORTAR INVENTARIO CSV ================== */
+const exportInvBtn = document.getElementById("exportInvCsv");
+
+if (exportInvBtn) {
+  exportInvBtn.addEventListener("click", () => {
+    if (inventory.length === 0) {
+      alert("No hay productos en el inventario");
+      return;
+    }
+
+    let csv = "Producto,Categoría,Cantidad,Precio\n";
+
+    inventory.forEach(p => {
+      csv += `${p.name},${p.category || ""},${p.qty},${p.price}\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "inventario_michi.csv";
+    link.click();
+
+    URL.revokeObjectURL(url);
+  });
+}
+
 function renderInventory() {
   inventoryTbody.innerHTML = "";
 
